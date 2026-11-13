@@ -1,11 +1,7 @@
 import os
-import nbformat
 import ipywidgets as widgets
 import numpy as np
 import astropy.io.fits as fits
-from astropy.wcs import WCS
-import matplotlib.pyplot as plt
-import pandas
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import plotly.express as px
@@ -459,7 +455,7 @@ class DataFile:
         
         for n in range(Nframes):
             fig.layout["xaxis"+str(n*2+1)] = {
-              "range": [0,uvmax],
+              "range": [0,uvmax*(c/self.freq_center)], # uvmax is in wavelengths; plotted data is in metres
               "domain": [0,0.5]
             }
             fig.layout["yaxis"+str(n*2+1)] = {
@@ -540,11 +536,11 @@ class DataFile:
         
         for n in range(Nframes):
           fig.layout["xaxis"+str(n*2+1)] = {
-              "range": [-uvmax,uvmax],
+              "range": [-uvmax*(c/self.freq_center),uvmax*(c/self.freq_center)], # wavelengths -> metres
               "domain": [0,0.5]
           }
           fig.layout["yaxis"+str(n*2+1)] = {
-              "range": [-uvmax,uvmax],
+              "range": [-uvmax*(c/self.freq_center),uvmax*(c/self.freq_center)],
               "domain": [0,1]
           }
         
