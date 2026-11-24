@@ -1,5 +1,4 @@
 class DataDownloader:
-    import nbformat
     import ipywidgets as widgets
     import datetime
     import asyncio
@@ -46,11 +45,13 @@ class DataDownloader:
 
         self.button = self.widgets.Button(description="Download Data")
         self.button.on_click(on_button_click)
+        self.status = self.widgets.Label(value="")
 
         display(self.dayPicker01)
         display(self.timePicker01)
         display(self.calPicker01)
         display(self.button)
+        display(self.status)
 
     
     def determineURL(self,day,time,cal):
@@ -60,7 +61,7 @@ class DataDownloader:
         elif day == "2023_04_21/":
             timestamp = 1682006400
         else:
-            raise "Invalid Day"
+            raise ValueError("Invalid Day: %s" % day)
         
         timestamp += time.hour * 3600 + time.minute * 60
         timestamp = int( ( int(timestamp/300 - 0.5) + 1 ) * 300 )
@@ -77,14 +78,17 @@ class DataDownloader:
     def downloadFile(self,url,filename):
 
         async def do_download():
-            
+
+            self.status.value = "Downloading " + filename + " ..."
             res = await self.pyodide.http.pyfetch(url)
             data = await res.bytes()
-            
+
             with open( filename ,"wb") as f:
                 f.write( data )
+            self.status.value = "Downloaded " + filename + " (%.1f MB)" % (len(data) / 1e6)
 
-        loop = self.asyncio.get_event_loop()
-        loop.run_until_complete( do_download() )
+        # Schedule on Pyodide's event loop without blocking. (run_until_complete
+        # needs WebAssembly stack switching, which not all browsers support.)
+        self.asyncio.ensure_future( do_download() )
 
 
